@@ -24,7 +24,7 @@ namespace Stellar
                     return;                    
                 }
                 var transactionBuilder = new Transaction.Builder(sourceAccount);
-                transactionBuilder.AddOperation(new PaymentOperation.Builder(destinationAccount.MuxedAccount, asset, "10").Build());
+                transactionBuilder.AddOperation(new PaymentOperation.Builder(destinationAccount.MuxedAccount, asset, value.ToString()).Build());
                 transactionBuilder.AddMemo(Memo.Text(memo));
                 transactionBuilder.AddTimeBounds(new TimeBounds(0, 0));                 
                 var transaction = transactionBuilder.Build();                
