@@ -1,16 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using API.Core.Orchestrators;
+using API.Core.Platform.Validators;
 
 namespace API.Core
 {
@@ -32,6 +27,9 @@ namespace API.Core
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API.Core", Version = "v1" });
             });
+
+            services.AddTransient<IDraftOrchestrator, DraftOrchestrator>();
+            services.AddTransient<IDraftValidator, DraftValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
