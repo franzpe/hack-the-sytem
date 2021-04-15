@@ -21,7 +21,7 @@ namespace API.Core.Controllers
 
         [HttpPost("Create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateDraft(CreateDraftModel Model)
+        public async Task<IActionResult> CreateDraft(Contract Model)
         {
             var userEmail = User.GetEmail();
 

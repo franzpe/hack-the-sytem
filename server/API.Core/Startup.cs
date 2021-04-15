@@ -6,6 +6,9 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using API.Core.Orchestrators;
 using API.Core.Platform.Validators;
+using API.Core.Models;
+using Microsoft.Extensions.Options;
+using API.Core.Services;
 
 namespace API.Core
 {
@@ -21,6 +24,12 @@ namespace API.Core
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ContractstoreDatabaseSettings>(
+            Configuration.GetSection(nameof(ContractstoreDatabaseSettings)));
+
+            services.AddSingleton<IContractstoreDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<ContractstoreDatabaseSettings>>().Value);
+            services.AddSingleton<ContractService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

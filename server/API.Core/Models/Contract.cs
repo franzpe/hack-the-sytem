@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace API.Core.Models
 {
-    public class CreateDraftModel
+    public class Contract
     {
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; }
         public string Description { get; set; }
         
         public string TargetedSum { get; set; }
