@@ -1,16 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using API.Core.Orchestrators;
+using API.Core.Platform.Validators;
+using API.Core.Models;
+using Microsoft.Extensions.Options;
+using API.Core.Services;
 
 namespace API.Core
 {
@@ -26,12 +24,21 @@ namespace API.Core
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<ContractstoreDatabaseSettings>(
+            Configuration.GetSection(nameof(ContractstoreDatabaseSettings)));
+
+            services.AddSingleton<IContractstoreDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<ContractstoreDatabaseSettings>>().Value);
+            services.AddSingleton<ContractService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "API.Core", Version = "v1" });
             });
+
+            services.AddTransient<IDraftOrchestrator, DraftOrchestrator>();
+            services.AddTransient<IDraftValidator, DraftValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
