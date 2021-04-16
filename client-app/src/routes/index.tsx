@@ -1,3 +1,5 @@
+import { ApplicationPaths } from 'components/api-authorization/ApiAuthorizationConstants';
+import ApiAuthorizationRoutes from 'components/api-authorization/ApiAuthorizationRoutes';
 import ROUTES from 'constants/routes';
 import { Layout } from 'layouts';
 import { Suspense } from 'react';
@@ -12,6 +14,7 @@ const Routes = () => {
         <Route path={ROUTES.LOGIN}>
           <LoginRoot />
         </Route>
+        <Route path={ApplicationPaths.ApiAuthorizationPrefix} component={ApiAuthorizationRoutes} />
         <Layout>
           <Route path={ROUTES.DASHBOARD}>
             <div>Dashboard</div>
