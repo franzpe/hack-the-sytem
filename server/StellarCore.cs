@@ -1,19 +1,72 @@
-﻿using stellar_dotnet_sdk;
+using stellar_dotnet_sdk;
 using stellar_dotnet_sdk.responses;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Stellar
-{
+{    
     public class StellarCore
     {
+        public class StellarAccount
+        {
+            string Email { get; set; }
+            string PublicKey { get; set; }
+            string SecretKey { get; set; }  
+            List<StellarTransaction> HistoryOfTransactions { get; set; }            
+            public StellarAccount()
+            {
+                HistoryOfTransactions = new List<StellarTransaction>();
+            }
+        }
+        public class Draft
+        {
+            StellarAccount SellerAccount { get; set; }
+            StellarAccount BuyerAccount { get; set; }
+            StellarAccount MiddleManAccount { get; set; }
+            DateTime ValitUntil { get; set; }
+            string Value { get; set; }
+            string TransactionDescription { get; set; }
+            List<string> Files { get; set; }
+            public Draft()
+            {
+                Files = new List<string>();
+            }
+        }
+        public class StellarTransaction
+        {
+            StellarAccount SourceAccount { get; set; }
+            StellarAccount DestinationAccount { get; set; }
+            string Value { get; set; }
+            string Memo { get; set; }
+            Asset asset { get; set; }
+        }
+        public void CreateDraft(StellarAccount sellerAccount, StellarAccount buyerAccount, StellarAccount middlemanAccount, string transactionDescription, string value, DateTime validUntil, List<string> files) { }
+        public static async void GetAccountBalance(string accountPublicKey)
+        {            
+            Network network = new Network("Test SDF Network ; September 2015");
+            Server server = new Server("https://horizon-testnet.stellar.org");
+            
+            KeyPair keypair = KeyPair.FromAccountId(accountPublicKey);
+            
+            AccountResponse accountResponse = await server.Accounts.Account(keypair.AccountId);
+            
+            Balance[] balances = accountResponse.Balances;
+          
+            for (int i = 0; i < balances.Length; i++)
+            {
+                Balance asset = balances[i];
+                Console.WriteLine("Asset Code: " + asset.AssetType);
+                Console.WriteLine("Asset Amount: " + asset.BalanceString);
+            }
+        }
         [Obsolete]
-        public static async void CreateTransaction(string sourceSecretKey, string destinationPublicKey, Asset asset, int value, string memo)
+        public static async void CreateTransaction(string sourceSecretKey, string destinationPublicKey, Asset asset, string value, string memo)
         {
             try
             {
-                var server = new stellar_dotnet_sdk.Server("https://horizon-testnet.stellar.org");
+                Network network = new Network("Test SDF Network ; September 2015");
+                Server server = new Server("https://horizon-testnet.stellar.org");                
                 KeyPair source = KeyPair.FromSecretSeed(sourceSecretKey);
                 KeyPair destination = KeyPair.FromAccountId(destinationPublicKey);
                 var destinationAccount = await server.Accounts.Account(destination.AccountId);                                
@@ -23,12 +76,9 @@ namespace Stellar
                     Console.WriteLine("The account does not exist!");
                     return;                    
                 }
-                var transactionBuilder = new Transaction.Builder(sourceAccount);
-                transactionBuilder.AddOperation(new PaymentOperation.Builder(destinationAccount.MuxedAccount, asset, value.ToString()).Build());
-                transactionBuilder.AddMemo(Memo.Text(memo));
-                transactionBuilder.AddTimeBounds(new TimeBounds(0, 0));                 
-                var transaction = transactionBuilder.Build();                
-                transaction.Sign(source.SigningKey, Network.Test());
+                PaymentOperation operation = new PaymentOperation.Builder(destination, asset, value).SetSourceAccount(sourceAccount.KeyPair).Build();
+                Transaction transaction = new Transaction.Builder(sourceAccount).AddOperation(operation).Build();
+                transaction.Sign(source.SigningKey, network);
                 SubmitTransactionResponse response = await server.SubmitTransaction(transaction);                   
                 if(response.IsSuccess())
                 {
