@@ -42,6 +42,15 @@ namespace Stellar
             Asset asset { get; set; }
         }
         public void CreateDraft(StellarAccount sellerAccount, StellarAccount buyerAccount, StellarAccount middlemanAccount, string transactionDescription, string value, DateTime validUntil, List<string> files) { }
+        public static async void GetTransactions(string accountPublicKey)
+        {
+            Server server = new Server("https://horizon-testnet.stellar.org");
+            var transactionsHistory = await server.Transactions.ForAccount(accountPublicKey).Execute();
+            foreach(TransactionResponse transaction in transactionsHistory.Records)
+            {
+                Console.WriteLine(transaction.MemoValue);
+            }            
+        }
         public static async void GetAccountBalance(string accountPublicKey)
         {            
             Network network = new Network("Test SDF Network ; September 2015");
