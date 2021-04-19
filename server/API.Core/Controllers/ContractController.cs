@@ -3,7 +3,6 @@ using API.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace API.Core.Controllers
@@ -11,23 +10,23 @@ namespace API.Core.Controllers
 
         [Route("api/[controller]")]
         [ApiController]
-        public class ContractsController : ControllerBase
+        public class ContractsController : BaseApiController
         {
-            private readonly ContractService _ContractService;
+            private readonly IContractService _contractService;
 
-            public ContractsController(ContractService ContractService)
+            public ContractsController(IContractService contractService)
             {
-                _ContractService = ContractService;
+                _contractService = contractService;
             }
 
             [HttpGet]
             public ActionResult<List<Contract>> Get() =>
-                _ContractService.Get();
+                _contractService.Get();
 
             [HttpGet("{id:length(24)}", Name = "GetContract")]
-            public ActionResult<Contract> Get(string id)
+            public ActionResult<Contract> Get(Guid id)
             {
-                var Contract = _ContractService.Get(id);
+                var Contract = _contractService.Get(id);
 
                 if (Contract == null)
                 {
@@ -38,39 +37,39 @@ namespace API.Core.Controllers
             }
 
             [HttpPost]
-            public ActionResult<Contract> Create(Contract Contract)
+            public async Task<IActionResult> Create(Contract contract)
             {
-                _ContractService.Create(Contract);
+                var result = await _contractService.CreateAsync(contract);
 
-                return CreatedAtRoute("GetContract", new { id = Contract.Id.ToString() }, Contract);
+                return Json(result);
             }
 
             [HttpPut("{id:length(24)}")]
-            public IActionResult Update(string id, Contract ContractIn)
+            public IActionResult Update(Guid id, Contract ContractIn)
             {
-                var Contract = _ContractService.Get(id);
+                var Contract = _contractService.Get(id);
 
                 if (Contract == null)
                 {
                     return NotFound();
                 }
 
-                _ContractService.Update(id, ContractIn);
+                _contractService.Update(id, ContractIn);
 
                 return NoContent();
             }
 
             [HttpDelete("{id:length(24)}")]
-            public IActionResult Delete(string id)
+            public IActionResult Delete(Guid id)
             {
-                var Contract = _ContractService.Get(id);
+                var Contract = _contractService.Get(id);
 
                 if (Contract == null)
                 {
                     return NotFound();
                 }
 
-                _ContractService.Remove(Contract.Id);
+                _contractService.Remove(Contract.Id);
 
                 return NoContent();
             }

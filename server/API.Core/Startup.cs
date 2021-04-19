@@ -38,7 +38,7 @@ namespace API.Core
             });
 
             services.AddTransient<IDraftOrchestrator, DraftOrchestrator>();
-            services.AddTransient<IDraftValidator, DraftValidator>();
+            services.AddTransient<IContractValidator, ContractValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
