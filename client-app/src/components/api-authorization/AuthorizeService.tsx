@@ -1,5 +1,6 @@
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from 'oidc-client';
 import { ApplicationPaths, ApplicationName } from './ApiAuthorizationConstants';
+import axios from 'axios';
 
 interface Callback {
   callback: Function;
@@ -59,7 +60,7 @@ export class AuthorizeService {
   //    Pop-Up blocker or the user has disabled PopUps.
   // 3) If the two methods above fail, we redirect the browser to the IdP to perform a traditional
   //    redirect flow.
-  async signIn(state: AuthState) {
+  async signIn(state?: AuthState) {
     await this.ensureUserManagerInitialized();
     try {
       console.log(this._userManager);
@@ -120,6 +121,9 @@ export class AuthorizeService {
   updateState(user: User | undefined) {
     this._user = user;
     this._isAuthenticated = !!this._user;
+    if (user?.access_token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${user.access_token}`;
+    }
     this.notifySubscribers();
   }
 
@@ -204,6 +208,25 @@ export class AuthorizeService {
       await this._userManager?.removeUser();
       this.updateState(undefined);
     });
+
+    axios.interceptors.response.use(
+      response => response,
+      error => {
+        if (error.response.status === 401) {
+          var axiosConfig = error.response.config;
+          {
+            return this.signIn({ returnUrl: `${window.location.href}` }).then(result => {
+              if (result.status == AuthenticationResultStatus.Success && this._user?.access_token) {
+                axiosConfig.headers['Authorization'] = `Bearer ${this._user.access_token}`;
+                return axios(axiosConfig);
+              }
+              return Promise.reject(error);
+            });
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   static get instance() {
