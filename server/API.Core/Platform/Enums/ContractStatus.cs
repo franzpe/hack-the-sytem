@@ -7,7 +7,7 @@
         Accepted,
         WaitingForVerification,
         VerifierRejected,
-        VerifierAccepted,
+        Verified,
         Finished,
         Canceled
     }

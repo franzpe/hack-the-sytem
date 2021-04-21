@@ -1,4 +1,4 @@
-﻿namespace API.Core.Models
+﻿namespace API.Core.Database
 {
     public interface IContractstoreDatabaseSettings
     {
