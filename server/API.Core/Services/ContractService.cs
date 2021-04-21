@@ -3,6 +3,7 @@ using API.Core.Models;
 using MongoDB.Driver;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using API.Core.Database;
 using API.Core.Platform.Enums;
 
 namespace API.Core.Services
@@ -19,12 +20,6 @@ namespace API.Core.Services
             _contracts = database.GetCollection<Contract>(settings.ContractsCollectionName);
         }
 
-        public List<Contract> Get() =>
-            _contracts.Find(contract => true).ToList();
-
-        public Contract Get(Guid id) =>
-            _contracts.Find(contract => contract.Id == id).FirstOrDefault();
-
         public async Task<OrchestratorResult<Contract>> CreateAsync(Contract contract)
         {
             var result = new OrchestratorResult<Contract>();
@@ -38,15 +33,21 @@ namespace API.Core.Services
             return result;
         }
 
-        public async Task<OrchestratorResult<Contract>> AcceptAsync(Contract contract, User user)
+        public async Task<OrchestratorResult<Contract>> AcceptAsync(Guid contractId, Guid userId)
         {
             var result = new OrchestratorResult<Contract>();
-            
-            if (user.Id == contract.VerifierId)
+            var contract = (await _contracts.FindAsync(x => x.Id == contractId)).FirstOrDefault();
+
+            if (contract == null)
+            {
+                return result.Error("Contract not found");
+            }
+
+            if (userId == contract.VerifierId)
             {
                 contract.VerifierAccepted = true;
             }
-            else if (user.Id == contract.SellerId || user.Id == contract.BuyerId)
+            else if (userId == contract.SellerId || userId == contract.BuyerId)
             {
                 contract.PartnerAccepted = true;
             }
@@ -59,9 +60,8 @@ namespace API.Core.Services
             {
                 contract.Status = ContractStatus.Accepted;
             }
-            
-            contract.UpdatedOn = DateTime.UtcNow;
 
+            contract.UpdatedOn = DateTime.UtcNow;
             await _contracts.ReplaceOneAsync(c => c.Id == contract.Id, contract);
 
             result.Model = contract;
@@ -69,11 +69,11 @@ namespace API.Core.Services
             return result;
         }
 
-        public async Task<OrchestratorResult<Contract>> FinishAsync(Guid contractId, User user)
+        public async Task<OrchestratorResult<Contract>> FinishAsync(Guid contractId, Guid userId)
         {
             var result = new OrchestratorResult<Contract>();
-
             var contracts = await _contracts.FindAsync(c => c.Id == contractId);
+            
             if (!contracts.Any())
             {
                 return result.Error("Contract not found.");
@@ -81,32 +81,27 @@ namespace API.Core.Services
 
             var contract = contracts.First();
 
-            if (user.Id != contract.VerifierId)
+            if (userId != contract.VerifierId)
             {
                 return result.Unauthorized();
             }
 
             if (contract.PartnerAccepted && contract.VerifierAccepted)
             {
-                contract.Status = ContractStatus.VerifierAccepted;
+                contract.Status = ContractStatus.Verified;
             }
 
-            //TODO: vykonanie samotnej tranzakcie
+            //TODO: vykonanie samotnej tranzakcie, asi vytvorenie poziadavky pre worker
             //contract.Status = ContractStatus.Finished;
 
             contract.UpdatedOn = DateTime.UtcNow;
-
             await _contracts.ReplaceOneAsync(c => c.Id == contract.Id, contract);
-
             result.Model = contract;
 
             return result;
         }
 
-        public void Update(Guid id, Contract ContractIn) =>
-            _contracts.ReplaceOne(Contract => Contract.Id == id, ContractIn);
-
-        public async Task<OrchestratorResult> CancelAsync(Guid contractId, User user)
+        public async Task<OrchestratorResult> CancelAsync(Guid contractId, Guid userId)
         {
             var result = new OrchestratorResult();
             var contracts = await _contracts.FindAsync(c => c.Id == contractId);
@@ -116,12 +111,12 @@ namespace API.Core.Services
             }
 
             var contract = contracts.First();
-            if (contract.BuyerId != user.Id)
+            if (contract.BuyerId != userId)
             {
                 return result.Unauthorized();
             }
 
-            //TODO: vykonanie tranzakcie, kde sa lumeny poslu s5 buyerovi a odrata sa manipulacny poplatok
+            //TODO: vykonanie tranzakcie, kde sa fundy poslu s5 buyerovi a odrata sa manipulacny poplatok
             //contract.Status = ContractStatus.Canceled;
 
             await _contracts.ReplaceOneAsync(c => c.Id == contract.Id, contract);
@@ -129,7 +124,16 @@ namespace API.Core.Services
             return result.Success();
         }
 
+        public void Update(Guid id, Contract ContractIn) =>
+            _contracts.ReplaceOne(Contract => Contract.Id == id, ContractIn);
+
         public void Remove(Guid id) =>
             _contracts.DeleteOne(Contract => Contract.Id == id);
+
+        public List<Contract> Get() =>
+            _contracts.Find(contract => true).ToList();
+
+        public Contract Get(Guid id) =>
+            _contracts.Find(contract => contract.Id == id).FirstOrDefault();
     }
 }

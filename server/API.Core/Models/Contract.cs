@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using API.Core.Platform.Enums;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
@@ -13,14 +14,19 @@ namespace API.Core.Models
         public Guid Id { get; set; }
         public string Description { get; set; }
         
+        [Required]
         public string TargetedSum { get; set; }
-        
+
+        [Required]
         public DateTime ValidUntil { get; set; }
 
+        [Required]
         public Guid BuyerId { get; set; }
 
+        [Required]
         public Guid SellerId { get; set; }
 
+        [Required]
         public Guid VerifierId { get; set; }
 
         public List<string> FileNames { get; set; }

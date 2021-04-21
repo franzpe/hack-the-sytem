@@ -2,7 +2,7 @@
 
 namespace API.Core.Platform.Validators
 {
-    public class ContractValidator : IContractValidator
+    public class UserValidator : IUserValidator
     {
         private const string EMAIL_REGEX =
             "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?";

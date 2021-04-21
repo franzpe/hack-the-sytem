@@ -1,6 +1,6 @@
 ﻿namespace API.Core.Platform.Validators
 {
-    public interface IContractValidator
+    public interface IUserValidator
     {
         bool IsValidEmail(string email);
     }
