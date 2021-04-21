@@ -6,23 +6,9 @@ services:
     build:
       context: .
       dockerfile: Web.Login/Dockerfile
-    depends_on:
-      - sqldata
 
   api.core:
     image: ${DOCKER_REGISTRY-}apicore
     build:
       context: .
       dockerfile: API.Core/Dockerfile
-    depends_on:
-      - nosqldata
-
-  sqldata:
-    image: "mcr.microsoft.com/mssql/server"
-    environment:
-      SA_PASSWORD: "Your_password123"
-      ACCEPT_EULA: "Y"
-
-  nosqldata:
-    image: mongo
-
