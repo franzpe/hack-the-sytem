@@ -1,4 +1,5 @@
 const colors = require('tailwindcss/colors');
+const colorAlphaPlugin = require('./tailwind-plugins/color-alpha');
 
 module.exports = {
   purge: {
@@ -16,6 +17,20 @@ module.exports = {
       sm: { max: '639px' }
     },
     colors: {
+      'primary-1-tint': '#cbcbcb',
+      'primary-1-tint-lt': '#dbdbdb',
+      'primary-1-light': '#efefef',
+      'primary-1-shade': '#292929',
+      'primary-2-tint': '#797a92',
+      'primary-2-navy': '#212353',
+      'primary-2-shade': '#00034f',
+      'primary-3-turq': '#39bacd',
+      'primary-3': '#10828c',
+      'primary-3-shade': '#199fb2',
+      'accent-orange': '#ff882c',
+      'accent-shade': '#ff6f00',
+      'accent-tint': '#ffb881',
+      error: '#eb5757',
       transparent: 'transparent',
       current: 'currentColor',
 
@@ -237,6 +252,13 @@ module.exports = {
       DEFAULT: '1'
     },
     fontFamily: {
+      avenir: ['Avenir', 'sans-serif'],
+      'avenir-book': ['Avenir-Book', 'sans-serif'],
+      'avenir-light': ['Avenir-Light', 'sans-serif'],
+      'avenir-roman': ['Avenir-Roman', 'sans-serif'],
+      'avenir-medium': ['Avenir-Medium', 'sans-serif'],
+      'avenir-heavy': ['Avenir-heavy', 'sans-serif'],
+      'avenir-black': ['Avenir-Black', 'sans-serif'],
       sans: [
         'ui-sans-serif',
         'system-ui',
@@ -962,5 +984,5 @@ module.exports = {
     wordBreak: ['responsive'],
     zIndex: ['responsive', 'focus-within', 'focus']
   },
-  plugins: []
+  plugins: [colorAlphaPlugin]
 };
