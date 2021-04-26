@@ -1,0 +1,20 @@
+.container {
+  & p {
+    @apply font-avenir-medium text-base #{!important};
+  }
+
+  & button {
+    @apply font-avenir-heavy #{!important};
+  }
+}
+
+.error {
+  & p {
+    @apply text-error font-avenir-medium text-base #{!important};
+    filter: contrast(0.7) !important;
+  }
+
+  & button {
+    @apply text-error font-avenir-heavy #{!important};
+  }
+}

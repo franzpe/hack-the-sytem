@@ -1,6 +1,6 @@
 import { ThunkAction, Action } from '@reduxjs/toolkit';
 
-import configureStore from './configureStore.dev';
+import configureStore from './configureStore';
 
 const store = configureStore();
 

@@ -1,0 +1,21 @@
+.custom-tooltip {
+  @apply bg-primary-3-turq #{!important};
+
+  &.place-top {
+    &:after {
+      @apply hidden #{!important};
+    }
+  }
+
+  &.place-bottom {
+    &:after {
+      @apply hidden #{!important};
+    }
+  }
+
+  &.place-right {
+    &:after {
+      @apply hidden #{!important};
+    }
+  }
+}

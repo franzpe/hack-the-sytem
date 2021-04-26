@@ -214,15 +214,14 @@ export class AuthorizeService {
       error => {
         if (error.response.status === 401) {
           var axiosConfig = error.response.config;
-          {
-            return this.signIn({ returnUrl: `${window.location.href}` }).then(result => {
-              if (result.status == AuthenticationResultStatus.Success && this._user?.access_token) {
-                axiosConfig.headers['Authorization'] = `Bearer ${this._user.access_token}`;
-                return axios(axiosConfig);
-              }
-              return Promise.reject(error);
-            });
-          }
+
+          return this.signIn({ returnUrl: `${window.location.href}` }).then(result => {
+            if (result.status === AuthenticationResultStatus.Success && this._user?.access_token) {
+              axiosConfig.headers['Authorization'] = `Bearer ${this._user.access_token}`;
+              return axios(axiosConfig);
+            }
+            return Promise.reject(error);
+          });
         }
         return Promise.reject(error);
       }
