@@ -8,6 +8,7 @@ using Microsoft.OpenApi.Models;
 using API.Core.Platform.Validators;
 using Microsoft.Extensions.Options;
 using API.Core.Services;
+using IdentityServer4.Stores;
 
 namespace API.Core
 {
@@ -28,16 +29,24 @@ namespace API.Core
 
             services.AddSingleton<IContractstoreDatabaseSettings>(sp =>
                 sp.GetRequiredService<IOptions<ContractstoreDatabaseSettings>>().Value);
-            services.AddSingleton<ContractService>();
+            services.AddSingleton<IContractService, ContractService>();
 
-            services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API.Core", Version = "v1" });
-            });
+            services.Configure<UserstoreDatabaseSettings>(
+                Configuration.GetSection(nameof(UserstoreDatabaseSettings)));
 
-            services.AddTransient<IContractService, ContractService>();
+            services.AddSingleton<IUserstoreDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<UserstoreDatabaseSettings>>().Value);
+            services.AddSingleton<IUserProfileService, UserProfileService>();
+
+            services.AddIdentityServer()
+                .AddInMemoryCaching()
+                .AddClientStore<InMemoryClientStore>()
+                .AddResourceStore<InMemoryResourcesStore>();
+
             services.AddTransient<IUserValidator, UserValidator>();
+
+            services.AddControllersWithViews();
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,19 +55,27 @@ namespace API.Core
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API.Core v1"));
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
             }
 
             app.UseHttpsRedirection();
-
+            app.UseStaticFiles();
             app.UseRouting();
 
+            app.UseAuthentication();
+            app.UseIdentityServer();
             app.UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=contract}/{action=create}/{id?}");
+                endpoints.MapRazorPages();
             });
         }
     }

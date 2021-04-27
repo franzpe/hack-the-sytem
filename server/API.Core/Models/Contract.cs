@@ -11,23 +11,24 @@ namespace API.Core.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Description { get; set; }
         
         [Required]
         public string TargetedSum { get; set; }
 
+        [DataType(DataType.DateTime)]
         [Required]
         public DateTime ValidUntil { get; set; }
 
         [Required]
-        public Guid BuyerId { get; set; }
+        public string BuyerId { get; set; }
 
         [Required]
-        public Guid SellerId { get; set; }
+        public string SellerId { get; set; }
 
         [Required]
-        public Guid VerifierId { get; set; }
+        public string VerifierId { get; set; }
 
         public List<string> FileNames { get; set; }
 

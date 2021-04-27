@@ -22,8 +22,8 @@ services:
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
-    depends_on:
-      - nosqldata
+    links:
+      - mongo
       
   sqldata:
     image: "mcr.microsoft.com/mssql/server"
@@ -38,12 +38,11 @@ services:
     ports:
       - "5434:1433"
 
-  nosqldata:
+  mongo:
     image: mongo
-    volumes:
-      - mongo-data:/data/db
+    container_name: mongo
     ports:
-      - "45149:27017" 
+      - "27017:27017" 
     
 volumes:
   sqlsystem:
