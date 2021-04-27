@@ -1,11 +1,12 @@
 using stellar_dotnet_sdk;
+using stellar_dotnet_sdk.requests;
 using stellar_dotnet_sdk.responses;
+using stellar_dotnet_sdk.responses.operations;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Stellar
-{    
+{
     public class StellarCore
     {
         public class StellarAccount
@@ -42,14 +43,34 @@ namespace Stellar
             Asset asset { get; set; }
         }
         public void CreateDraft(StellarAccount sellerAccount, StellarAccount buyerAccount, StellarAccount middlemanAccount, string transactionDescription, string value, DateTime validUntil, List<string> files) { }
-        public static async void GetTransactions(string accountPublicKey)
+              
+        public static event EventHandler<TransactionResponse> OnMessage;
+        static async void c_OnMessage(object sender, TransactionResponse transaction)
         {
             Server server = new Server("https://horizon-testnet.stellar.org");
-            var transactionsHistory = await server.Transactions.ForAccount(accountPublicKey).Execute();
-            foreach(TransactionResponse transaction in transactionsHistory.Records)
+            var operationResponse = await server.Operations.ForTransaction(transaction.Hash).Execute();
+            PaymentOperationResponse paymentResponse = (PaymentOperationResponse)operationResponse.Records[0];
+            if (transaction.MemoValue != "")
+                Console.WriteLine(" From: {0}\n To:{1}\n Amount: {2}\n Hash: {3}\n Memo:{4}\n PagingToken: {5}", paymentResponse.SourceAccount, paymentResponse.To, paymentResponse.Amount, paymentResponse.TransactionHash, transaction.MemoValue, paymentResponse.PagingToken);
+        }
+        public static async void IncommingTransaction(string accountPublicKey)
+        {
+            Server server = new Server("https://horizon-testnet.stellar.org");            
+            TransactionsRequestBuilder tranactionsRequest = server.Transactions.ForAccount(accountPublicKey);
+            //doriesit ukladanie a nacitavanie posledneho tokenu, aby sa nemusela prezerat cela historia transakci
+            tranactionsRequest.Cursor("2895465087508481");            
+            OnMessage += c_OnMessage;
+            EventHandler<TransactionResponse> listener = OnMessage;
+            await tranactionsRequest.Stream(listener).Connect();
+        }
+        public static async void GetTransactions(string accountPublicKey)
+        {                        
+            Server server = new Server("https://horizon-testnet.stellar.org");
+            var transactionsHistory = await server.Transactions.ForAccount(accountPublicKey).Execute();            
+            foreach (TransactionResponse transaction in transactionsHistory.Records)
             {
                 Console.WriteLine(transaction.MemoValue);
-            }            
+            }
         }
         public static async void GetAccountBalance(string accountPublicKey)
         {            
@@ -86,7 +107,7 @@ namespace Stellar
                     return;                    
                 }
                 PaymentOperation operation = new PaymentOperation.Builder(destination, asset, value).SetSourceAccount(sourceAccount.KeyPair).Build();
-                Transaction transaction = new Transaction.Builder(sourceAccount).AddOperation(operation).Build();
+                Transaction transaction = new Transaction.Builder(sourceAccount).AddOperation(operation).AddMemo(Memo.Text(memo)).Build();
                 transaction.Sign(source.SigningKey, network);
                 SubmitTransactionResponse response = await server.SubmitTransaction(transaction);                   
                 if(response.IsSuccess())
