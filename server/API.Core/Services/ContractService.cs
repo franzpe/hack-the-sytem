@@ -1,7 +1,6 @@
 ﻿using System;
 using API.Core.Models;
 using MongoDB.Driver;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Core.Database;
 using API.Core.Platform.Enums;
@@ -28,12 +27,13 @@ namespace API.Core.Services
             contract.UpdatedOn = DateTime.UtcNow;
 
             await _contracts.InsertOneAsync(contract);
+
             result.Model = contract;
 
             return result;
         }
 
-        public async Task<OrchestratorResult<Contract>> AcceptAsync(Guid contractId, Guid userId)
+        public async Task<OrchestratorResult<Contract>> AcceptAsync(string contractId, string userId)
         {
             var result = new OrchestratorResult<Contract>();
             var contract = (await _contracts.FindAsync(x => x.Id == contractId)).FirstOrDefault();
@@ -69,7 +69,7 @@ namespace API.Core.Services
             return result;
         }
 
-        public async Task<OrchestratorResult<Contract>> FinishAsync(Guid contractId, Guid userId)
+        public async Task<OrchestratorResult<Contract>> FinishAsync(string contractId, string userId)
         {
             var result = new OrchestratorResult<Contract>();
             var contracts = await _contracts.FindAsync(c => c.Id == contractId);
@@ -81,10 +81,10 @@ namespace API.Core.Services
 
             var contract = contracts.First();
 
-            if (userId != contract.VerifierId)
-            {
-                return result.Unauthorized();
-            }
+            //if (userId != contract.VerifierId)
+            //{
+            //    return result.Unauthorized();
+            //}
 
             if (contract.PartnerAccepted && contract.VerifierAccepted)
             {
@@ -101,7 +101,7 @@ namespace API.Core.Services
             return result;
         }
 
-        public async Task<OrchestratorResult> CancelAsync(Guid contractId, Guid userId)
+        public async Task<OrchestratorResult> CancelAsync(string contractId, string userId)
         {
             var result = new OrchestratorResult();
             var contracts = await _contracts.FindAsync(c => c.Id == contractId);
@@ -124,16 +124,16 @@ namespace API.Core.Services
             return result.Success();
         }
 
-        public void Update(Guid id, Contract ContractIn) =>
-            _contracts.ReplaceOne(Contract => Contract.Id == id, ContractIn);
+        //public void Update(Guid id, Contract ContractIn) =>
+        //    _contracts.ReplaceOne(Contract => Contract.Id == id, ContractIn);
 
-        public void Remove(Guid id) =>
-            _contracts.DeleteOne(Contract => Contract.Id == id);
+        //public void Remove(Guid id) =>
+        //    _contracts.DeleteOne(Contract => Contract.Id == id);
 
-        public List<Contract> Get() =>
-            _contracts.Find(contract => true).ToList();
+        //public List<Contract> Get() =>
+        //    _contracts.Find(contract => true).ToList();
 
-        public Contract Get(Guid id) =>
-            _contracts.Find(contract => contract.Id == id).FirstOrDefault();
+        //public Contract Get(Guid id) =>
+        //    _contracts.Find(contract => contract.Id == id).FirstOrDefault();
     }
 }

@@ -11,34 +11,46 @@ namespace API.Core.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public Guid Id { get; set; }
+        public string Id { get; set; }
         public string Description { get; set; }
         
         [Required]
+        [BsonElement("TargetedSum")]
         public string TargetedSum { get; set; }
 
         [Required]
+        [DataType(DataType.DateTime)]
+        [BsonElement("ValidUntil")]
         public DateTime ValidUntil { get; set; }
 
         [Required]
-        public Guid BuyerId { get; set; }
+        [BsonElement("BuyerId")]
+        public string BuyerId { get; set; }
 
         [Required]
-        public Guid SellerId { get; set; }
+        [BsonElement("SellerId")]
+        public string SellerId { get; set; }
 
         [Required]
-        public Guid VerifierId { get; set; }
+        [BsonElement("VerifierId")]
+        public string VerifierId { get; set; }
 
+        [BsonElement("FileNames")]
         public List<string> FileNames { get; set; }
 
+        [BsonElement("ManipulationFee")]
         public string ManipulationFee { get; set; }
 
+        [BsonElement("Status")]
         public ContractStatus Status { get; set; }
 
+        [BsonElement("UpdatedOn")]
         public DateTime UpdatedOn { get; set; }
 
+        [BsonElement("PartnerAccepted")]
         public bool PartnerAccepted { get; set; }
 
+        [BsonElement("VerifierAccepted")]
         public bool VerifierAccepted { get; set; }
     }
 }

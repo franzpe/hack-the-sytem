@@ -1,35 +1,37 @@
-﻿using API.Core.Models;
+﻿using System;
+using API.Core.Models;
 using API.Core.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using API.Core.Platform.Security;
+using Microsoft.AspNetCore.Authorization;
 
 namespace API.Core.Controllers
 {
 
         [Route("api/[controller]")]
         [ApiController]
-        public class ContractsController : BaseApiController
+        public class ContractController : BaseApiController
         {
             private readonly IContractService _contractService;
 
-            public ContractsController(IContractService contractService)
+            public ContractController(IContractService contractService)
             {
                 _contractService = contractService;
             }
 
-            [HttpPost]
+            [HttpPost("Create")]
+            [AllowAnonymous]
             public async Task<IActionResult> Create(Contract contract)
             {
+                var dateTime = DateTime.UtcNow;
                 var result = await _contractService.CreateAsync(contract);
 
                 return Json(result);
             }
 
             [HttpPost]
-            public async Task<IActionResult> Accept(Guid contractId)
+            public async Task<IActionResult> Accept(string contractId)
             {
                 var userId = User.GetId();
                 if (userId == null)
@@ -37,13 +39,13 @@ namespace API.Core.Controllers
                     return Unauthorized();
                 }
 
-                var result = await _contractService.AcceptAsync(contractId, userId.GetValueOrDefault());
+                var result = await _contractService.AcceptAsync(contractId, userId);
 
                 return Json(result);
             }
 
             [HttpPost]
-            public async Task<IActionResult> Finish(Guid contractId)
+            public async Task<IActionResult> Finish(string contractId)
             {
                 var userId = User.GetId();
                 if (userId == null)
@@ -51,13 +53,13 @@ namespace API.Core.Controllers
                     return Unauthorized();
                 }
 
-                var result = await _contractService.FinishAsync(contractId, userId.GetValueOrDefault());
+                var result = await _contractService.FinishAsync(contractId, userId);
 
                 return Json(result);
             }
 
             [HttpPost]
-            public async Task<IActionResult> Cancel(Guid contractId)
+            public async Task<IActionResult> Cancel(string contractId)
             {
                 var userId = User.GetId();
                 if (userId == null)
@@ -65,57 +67,57 @@ namespace API.Core.Controllers
                     return Unauthorized();
                 }
 
-                var result = await _contractService.CancelAsync(contractId, userId.GetValueOrDefault());
+                var result = await _contractService.CancelAsync(contractId, userId);
 
                 return Json(result);
             }
 
-        [HttpPut("{id:length(24)}")]
-            public IActionResult Update(Guid id, Contract ContractIn)
-            {
-                var Contract = _contractService.Get(id);
+        //[HttpPut("{id:length(24)}")]
+        //    public IActionResult Update(Guid id, Contract ContractIn)
+        //    {
+        //        var Contract = _contractService.Get(id);
 
-                if (Contract == null)
-                {
-                    return NotFound();
-                }
+        //        if (Contract == null)
+        //        {
+        //            return NotFound();
+        //        }
 
-                _contractService.Update(id, ContractIn);
+        //        _contractService.Update(id, ContractIn);
 
-                return NoContent();
-            }
+        //        return NoContent();
+        //    }
 
-            [HttpDelete("{id:length(24)}")]
-            public IActionResult Delete(Guid id)
-            {
-                var Contract = _contractService.Get(id);
+        //    [HttpDelete("{id:length(24)}")]
+        //    public IActionResult Delete(Guid id)
+        //    {
+        //        var Contract = _contractService.Get(id);
 
-                if (Contract == null)
-                {
-                    return NotFound();
-                }
+        //        if (Contract == null)
+        //        {
+        //            return NotFound();
+        //        }
 
-                _contractService.Remove(Contract.Id);
+        //        _contractService.Remove(Contract.Id);
 
-                return NoContent();
-            }
+        //        return NoContent();
+        //    }
 
-            [HttpGet]
-            public ActionResult<List<Contract>> Get() =>
-                _contractService.Get();
+        //    [HttpGet]
+        //    public ActionResult<List<Contract>> Get() =>
+        //        _contractService.Get();
 
-            [HttpGet("{id:length(24)}", Name = "GetContract")]
-            public ActionResult<Contract> Get(Guid id)
-            {
-                var Contract = _contractService.Get(id);
+        //    [HttpGet("{id:length(24)}", Name = "GetContract")]
+        //    public ActionResult<Contract> Get(Guid id)
+        //    {
+        //        var Contract = _contractService.Get(id);
 
-                if (Contract == null)
-                {
-                    return NotFound();
-                }
+        //        if (Contract == null)
+        //        {
+        //            return NotFound();
+        //        }
 
-                return Contract;
-            }
+        //        return Contract;
+        //    }
     }
 }
 
