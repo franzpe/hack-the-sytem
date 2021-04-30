@@ -1,3 +1,4 @@
+using System.Linq;
 using API.Core.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,17 @@ namespace API.Core
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Description = "Server API for hackathon",
+                    Title = "API.Core",
+                    Version = "v1"
+                });
+                c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+            });
+
             services.Configure<ContractstoreDatabaseSettings>(
             Configuration.GetSection(nameof(ContractstoreDatabaseSettings)));
 
@@ -43,6 +55,10 @@ namespace API.Core
                 .AddClientStore<InMemoryClientStore>()
                 .AddResourceStore<InMemoryResourcesStore>();
 
+            services.AddSingleton<IUserstoreDatabaseSettings>(sp =>
+                sp.GetRequiredService<IOptions<UserstoreDatabaseSettings>>().Value);
+            services.AddSingleton<IUserProfileService, UserProfileService>();
+
             services.AddTransient<IUserValidator, UserValidator>();
 
             services.AddControllersWithViews();
@@ -52,16 +68,13 @@ namespace API.Core
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "API.Core V1");
+            });
+
+            app.UseDeveloperExceptionPage();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

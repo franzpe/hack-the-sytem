@@ -39,7 +39,7 @@ namespace API.Core.Controllers
                     return Unauthorized();
                 }
 
-                var result = await _contractService.AcceptAsync(contractId, userId.GetValueOrDefault());
+                var result = await _contractService.AcceptAsync(contractId, userId);
 
                 return Json(result);
             }
@@ -53,7 +53,7 @@ namespace API.Core.Controllers
                     return Unauthorized();
                 }
 
-                var result = await _contractService.FinishAsync(contractId, userId.GetValueOrDefault());
+                var result = await _contractService.FinishAsync(contractId, userId);
 
                 return Json(result);
             }
@@ -67,7 +67,7 @@ namespace API.Core.Controllers
                     return Unauthorized();
                 }
 
-                var result = await _contractService.CancelAsync(contractId, userId.GetValueOrDefault());
+                var result = await _contractService.CancelAsync(contractId, userId);
 
                 return Json(result);
             }

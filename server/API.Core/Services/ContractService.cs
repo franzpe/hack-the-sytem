@@ -33,7 +33,7 @@ namespace API.Core.Services
             return result;
         }
 
-        public async Task<OrchestratorResult<Contract>> AcceptAsync(string contractId, Guid userId)
+        public async Task<OrchestratorResult<Contract>> AcceptAsync(string contractId, string userId)
         {
             var result = new OrchestratorResult<Contract>();
             var contract = (await _contracts.FindAsync(x => x.Id == contractId)).FirstOrDefault();
@@ -43,18 +43,18 @@ namespace API.Core.Services
                 return result.Error("Contract not found");
             }
 
-            //if (userId == contract.VerifierId)
-            //{
-            //    contract.VerifierAccepted = true;
-            //}
-            //else if (userId == contract.SellerId || userId == contract.BuyerId)
-            //{
-            //    contract.PartnerAccepted = true;
-            //}
-            //else
-            //{
-            //    return result.Unauthorized();
-            //}
+            if (userId == contract.VerifierId)
+            {
+                contract.VerifierAccepted = true;
+            }
+            else if (userId == contract.SellerId || userId == contract.BuyerId)
+            {
+                contract.PartnerAccepted = true;
+            }
+            else
+            {
+                return result.Unauthorized();
+            }
 
             if (contract.PartnerAccepted && contract.VerifierAccepted)
             {
@@ -69,7 +69,7 @@ namespace API.Core.Services
             return result;
         }
 
-        public async Task<OrchestratorResult<Contract>> FinishAsync(string contractId, Guid userId)
+        public async Task<OrchestratorResult<Contract>> FinishAsync(string contractId, string userId)
         {
             var result = new OrchestratorResult<Contract>();
             var contracts = await _contracts.FindAsync(c => c.Id == contractId);
@@ -101,7 +101,7 @@ namespace API.Core.Services
             return result;
         }
 
-        public async Task<OrchestratorResult> CancelAsync(string contractId, Guid userId)
+        public async Task<OrchestratorResult> CancelAsync(string contractId, string userId)
         {
             var result = new OrchestratorResult();
             var contracts = await _contracts.FindAsync(c => c.Id == contractId);
@@ -111,10 +111,10 @@ namespace API.Core.Services
             }
 
             var contract = contracts.First();
-            //if (contract.BuyerId != userId)
-            //{
-            //    return result.Unauthorized();
-            //}
+            if (contract.BuyerId != userId)
+            {
+                return result.Unauthorized();
+            }
 
             //TODO: vykonanie tranzakcie, kde sa fundy poslu s5 buyerovi a odrata sa manipulacny poplatok
             //contract.Status = ContractStatus.Canceled;

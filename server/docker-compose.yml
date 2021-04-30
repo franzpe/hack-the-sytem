@@ -12,3 +12,15 @@ services:
     build:
       context: .
       dockerfile: API.Core/Dockerfile
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
+  mongo:
+    container_name: mongo
+    image: mongo:4.2.13
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
