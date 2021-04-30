@@ -8,14 +8,6 @@ using MongoDB.Driver;
 
 namespace API.Core.Services
 {
-    public interface IUserProfileService
-    {
-        Task<OrchestratorResult<UserProfile>> CreateAsync(UserProfile userProfile);
-        Task<OrchestratorResult<UserProfile>> UpdateAsync(UserProfile userProfile);
-        Task<OrchestratorResult<UserProfile>> DeleteAsync(Guid userId);
-        Task<OrchestratorResult<List<UserProfile>>> GetVerifiersAsync();
-    }
-
     public class UserProfileService : IUserProfileService
     {
         private readonly IMongoCollection<UserProfile> _userProfiles;
@@ -28,45 +20,45 @@ namespace API.Core.Services
             _userProfiles = database.GetCollection<UserProfile>(settings.UsersCollectionName);
         }
 
-        public async Task<OrchestratorResult<UserProfile>> CreateAsync(UserProfile userProfile)
+        public async Task<OrchestratorResult<UserProfile>> CreateAsync(UserProfile model)
         {
             var result = new OrchestratorResult<UserProfile>();
 
-            userProfile.Status = UserStatus.Unverified; //TODO: Unverified sa zmeni na active po odkliknuti verifikacneho mailu?
-            userProfile.UpdatedOn = DateTime.UtcNow;
+            model.Status = UserStatus.Unverified; //TODO: Unverified sa zmeni na active po odkliknuti verifikacneho mailu?
+            model.UpdatedOn = DateTime.UtcNow;
 
-            await _userProfiles.InsertOneAsync(userProfile);
-            result.Model = userProfile;
+            await _userProfiles.InsertOneAsync(model);
+            result.Model = model;
 
             return result;
         }
 
-        public async Task<OrchestratorResult<UserProfile>> UpdateAsync(UserProfile userProfile)
+        public async Task<OrchestratorResult<UserProfile>> UpdateAsync(UserProfile model)
         {
             var result = new OrchestratorResult<UserProfile>();
 
-            var userProfiles = await _userProfiles.FindAsync(x => x.UserId == userProfile.UserId);
-            var dbUserProfile = userProfiles.SingleOrDefault();
+            var models = await _userProfiles.FindAsync(x => x.Id == model.Id);
+            var dbUserProfile = models.SingleOrDefault();
 
             if (dbUserProfile == null)
             {
                 return result.Unauthorized();
             }
 
-            userProfile.UpdatedOn = DateTime.UtcNow;
+            model.UpdatedOn = DateTime.UtcNow;
 
-            await _userProfiles.FindOneAndReplaceAsync(x => x.UserId == userProfile.UserId, userProfile);
-            result.Model = userProfile;
+            await _userProfiles.FindOneAndReplaceAsync(x => x.Id == model.Id, model);
+            result.Model = model;
 
             return result;
         }
 
-        public async Task<OrchestratorResult<UserProfile>> DeleteAsync(Guid userId)
+        public async Task<OrchestratorResult<UserProfile>> DeleteAsync(string userId)
         {
             var result = new OrchestratorResult<UserProfile>();
 
-            var userProfiles = await _userProfiles.FindAsync(x => x.UserId == userId);
-            var dbUserProfile = userProfiles.SingleOrDefault();
+            var models = await _userProfiles.FindAsync(x => x.Id == userId);
+            var dbUserProfile = models.SingleOrDefault();
 
             if (dbUserProfile == null)
             {
@@ -76,7 +68,7 @@ namespace API.Core.Services
             dbUserProfile.Status = UserStatus.Deleted;
             dbUserProfile.UpdatedOn = DateTime.UtcNow;
 
-            await _userProfiles.FindOneAndReplaceAsync(x => x.UserId == userId, dbUserProfile);
+            await _userProfiles.FindOneAndReplaceAsync(x => x.Id == userId, dbUserProfile);
             result.Model = dbUserProfile;
 
             return result;
@@ -86,7 +78,8 @@ namespace API.Core.Services
         {
             var result = new OrchestratorResult<List<UserProfile>>();
 
-            var verifierProfiles = await _userProfiles.FindAsync(x => x.IsVerifier);
+            var verifierProfiles = await _userProfiles
+                .FindAsync(x => x.IsVerifier && x.Status == UserStatus.Active);
             result.Model = await verifierProfiles.ToListAsync();
 
             return result;

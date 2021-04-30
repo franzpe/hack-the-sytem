@@ -30,7 +30,7 @@ namespace API.Core.Controllers
                 return Json(result);
             }
 
-            [HttpPost]
+            [HttpPost("Accept")]
             public async Task<IActionResult> Accept(string contractId)
             {
                 var userId = User.GetId();
@@ -44,7 +44,7 @@ namespace API.Core.Controllers
                 return Json(result);
             }
 
-            [HttpPost]
+            [HttpPost("Finish")]
             public async Task<IActionResult> Finish(string contractId)
             {
                 var userId = User.GetId();
@@ -58,7 +58,7 @@ namespace API.Core.Controllers
                 return Json(result);
             }
 
-            [HttpPost]
+            [HttpPost("Cancel")]
             public async Task<IActionResult> Cancel(string contractId)
             {
                 var userId = User.GetId();
