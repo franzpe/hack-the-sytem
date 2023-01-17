@@ -1,2 +1,2 @@
-*.tsx linguist-detectable
-*.sass linguist-documentation
+*.tsx linguist-language=Typescript
+*.sass linguist-vendored
